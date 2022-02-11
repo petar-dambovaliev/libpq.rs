@@ -54,7 +54,7 @@
  */
 #[derive(Debug)]
 pub struct PqBytes {
-    ptr: *const u8,
+    ptr: *mut std::ffi::c_void,
     len: usize,
 }
 
@@ -68,7 +68,7 @@ impl std::ops::Deref for PqBytes {
         //   If we trust libpq, we can trust this method.
         // * The lifetime of returned slice is bounded to the lifetime of this
         //   struct (elided).
-        unsafe { std::slice::from_raw_parts(self.ptr, self.len) }
+        unsafe { std::slice::from_raw_parts(self.ptr as *const _, self.len) }
     }
 }
 
@@ -87,7 +87,7 @@ impl Drop for PqBytes {
 }
 
 impl PqBytes {
-    pub(crate) fn from_raw(ptr: *const u8, len: usize) -> PqBytes {
+    pub(crate) fn from_raw(ptr: *mut std::ffi::c_void, len: usize) -> PqBytes {
         debug_assert!(!ptr.is_null(), "Buffer ptr must be not null");
         debug_assert!(len > 0, "Buffer length must be greater than 0");
         debug_assert!(
@@ -143,7 +143,7 @@ impl PqBytes {
 */
 #[derive(Debug)]
 pub struct PqString {
-    ptr: *const i8,
+    ptr: *mut std::ffi::c_void,
 }
 
 impl std::ops::Deref for PqString {
@@ -158,7 +158,7 @@ impl std::ops::Deref for PqString {
         //   any other interior '\0' since that libpq assures this to us.
         // * The lifetime of CStr is bounded to the lifetime of this struct (elided).
         // * The ptr is not changed during the lifetime of the struct.
-        unsafe { std::ffi::CStr::from_ptr(self.ptr) }
+        unsafe { std::ffi::CStr::from_ptr(self.ptr as *const _) }
     }
 }
 
@@ -183,7 +183,7 @@ impl Drop for PqString {
 }
 
 impl PqString {
-    pub(crate) fn from_raw(ptr: *const i8) -> PqString {
+    pub(crate) fn from_raw(ptr: *mut std::ffi::c_void) -> PqString {
         debug_assert!(!ptr.is_null(), "ptr must be not null");
         PqString { ptr }
     }

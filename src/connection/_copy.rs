@@ -15,7 +15,7 @@ impl Connection {
         let success = unsafe {
             pq_sys::PQputCopyData(
                 self.into(),
-                buffer.as_ptr() as *const i8,
+                buffer.as_ptr() as *const libc::c_char,
                 buffer.len() as i32,
             )
         };
@@ -70,8 +70,10 @@ impl Connection {
         match success {
             -2 => self.error(),
             -1 => Err(crate::errors::Error::Backend("COPY is done".to_string())),
-            0 => Err(crate::errors::Error::Backend("COPY still in progress".to_string())),
-            nbytes => Ok(PqBytes::from_raw(ptr as *const u8, nbytes as usize)),
+            0 => Err(crate::errors::Error::Backend(
+                "COPY still in progress".to_string(),
+            )),
+            nbytes => Ok(PqBytes::from_raw(ptr as *mut libc::c_void, nbytes as usize)),
         }
     }
 }

@@ -14,7 +14,7 @@ pub fn password(passwd: &str, user: &str) -> crate::errors::Result<PqString> {
 
     unsafe {
         let ptr = pq_sys::PQencryptPassword(c_passwd.as_ptr(), c_user.as_ptr());
-        let encrypt = PqString::from_raw(ptr);
+        let encrypt = PqString::from_raw(ptr as *mut libc::c_void);
 
         Ok(encrypt)
     }

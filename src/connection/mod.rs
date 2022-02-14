@@ -74,7 +74,7 @@ impl Connection {
             if ptr.is_null() {
                 self.error()
             } else {
-                Ok(PqString::from_raw(ptr))
+                Ok(PqString::from_raw(ptr as *mut libc::c_void))
             }
         }
     }

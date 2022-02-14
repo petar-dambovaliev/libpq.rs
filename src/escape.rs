@@ -8,7 +8,7 @@ pub(crate) fn literal(conn: &crate::Connection, str: &str) -> crate::errors::Res
         if raw.is_null() {
             conn.error()
         } else {
-            Ok(PqString::from_raw(raw))
+            Ok(PqString::from_raw(raw as *mut libc::c_void))
         }
     }
 }
@@ -29,7 +29,7 @@ pub fn identifier(conn: &crate::Connection, str: &str) -> crate::errors::Result<
         if raw.is_null() {
             conn.error()
         } else {
-            Ok(PqString::from_raw(raw))
+            Ok(PqString::from_raw(raw as *mut libc::c_void))
         }
     }
 }
@@ -57,7 +57,7 @@ pub(crate) fn string_conn(conn: &crate::Connection, from: &str) -> crate::errors
         }
     };
 
-    Ok(PqString::from_raw(raw))
+    Ok(PqString::from_raw(raw as *mut libc::c_void))
 }
 
 #[deprecated(note = "Use libpq::Connection::escape_string instead")]
@@ -87,7 +87,10 @@ pub(crate) fn bytea_conn(conn: &crate::Connection, from: &[u8]) -> crate::errors
         if to_ptr.is_null() {
             conn.error()
         } else {
-            Ok(PqBytes::from_raw(to_ptr, to_len as usize))
+            Ok(PqBytes::from_raw(
+                to_ptr as *mut libc::c_void,
+                to_len as usize,
+            ))
         }
     }
 }
@@ -109,7 +112,10 @@ pub fn bytea(from: &[u8]) -> crate::errors::Result<PqBytes> {
              */
             Err(crate::errors::Error::Backend("out of memory\n".to_string()))
         } else {
-            Ok(PqBytes::from_raw(to_ptr, to_len as usize))
+            Ok(PqBytes::from_raw(
+                to_ptr as *mut libc::c_void,
+                to_len as usize,
+            ))
         }
     }
 }
@@ -130,7 +136,7 @@ pub fn unescape_bytea(from: &[u8]) -> crate::errors::Result<PqBytes> {
         if tmp.is_null() {
             Err(crate::errors::Error::Unknow)
         } else {
-            Ok(PqBytes::from_raw(tmp, len as usize))
+            Ok(PqBytes::from_raw(tmp as *mut libc::c_void, len as usize))
         }
     }
 }

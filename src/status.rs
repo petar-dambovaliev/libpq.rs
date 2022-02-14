@@ -95,7 +95,7 @@ impl ToString for Status {
     fn to_string(&self) -> String {
         let status = unsafe { pq_sys::PQresStatus(self.into()) };
 
-        crate::connection::PqString::from_raw(status)
+        crate::connection::PqString::from_raw(status as *mut libc::c_void)
             .to_string_lossy()
             .to_string()
     }
